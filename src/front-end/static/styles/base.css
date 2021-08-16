@@ -1,6 +1,17 @@
 .heading {
-    margin-left: 5vw;
-    margin-top: 5vh;
-    margin-right: 5vw;
+    margin: 5vh 5vw 5vh;
     border-bottom: 1px solid gray;
+}
+
+.content {
+    margin-left: 5vw;
+    margin-right: 5vw;
+}
+
+.stats {
+    transition: 0.5s;
+}
+
+.stats:hover {
+    transform: scale(1, 1.3);
 }
