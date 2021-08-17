@@ -5,6 +5,7 @@ navbar.setTitle("PC Health Check App");
 navbar.addItem("logo", "../static/images/icon.png");
 navbar.addItem("button", ["primary", "<i class=\"fas fa-adjust\"></i>", "toggle();"], "right");
 navbar.addItem("link", ["Home", "index.html"]);
+navbar.addItem("link", ["Can I install Windows 11?", "windows.html"])
 navbar.addItem("link", ["Settings", "settings.html"]);
 
 // this function sets the size of the navbar logo to 50

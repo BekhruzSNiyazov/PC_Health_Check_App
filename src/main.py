@@ -1,5 +1,6 @@
 import eel
 import psutil
+import shutil
 
 bytes_to_gb = lambda bytes: bytes / 1000000000
 
@@ -22,6 +23,14 @@ def ram_total():
 @eel.expose
 def ram_gb_used():
 	return ram_total() - bytes_to_gb(psutil.virtual_memory().available)
+
+@eel.expose
+def disk_usage():
+	total, used, free = shutil.disk_usage("/")
+	total = total // (2 ** 30)
+	used = used // (2 ** 30)
+	free = free // (2 ** 30)
+	return [total, used, free]
 
 
 eel.init("front-end")
