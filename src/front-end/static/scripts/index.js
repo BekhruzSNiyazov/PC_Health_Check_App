@@ -1,4 +1,4 @@
-const heading = addHeading("Stats", 6);
+const heading = addHeading("Stats");
 heading.classes = "heading";
 heading.update();
 

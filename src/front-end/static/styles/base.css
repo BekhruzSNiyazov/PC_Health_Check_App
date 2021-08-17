@@ -8,7 +8,7 @@
     margin-right: 5vw;
 }
 
-* {
+body *:not(#nav *, .heading) {
     transition: 0.5s;
 }
 
