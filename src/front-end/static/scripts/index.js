@@ -1,4 +1,4 @@
-const stats_heading = addHeading("Stats");
+const stats_heading = addHeading("Stats", 5);
 stats_heading.classes = "heading";
 stats_heading.update();
 
@@ -43,10 +43,26 @@ const update_stats = async () => {
     }
 }
 
-const about = () => {
-    const about_heading = addHeading("About your PC");
+const about = async () => {
+    const about_heading = addHeading("About your PC", 5);
     about_heading.classes = "heading";
     about_heading.update();
+
+    const username_at_name = addHeading(await eel.username()() + "@" + await eel.pc_name()(), 3);
+    username_at_name.classes = "content";
+    username_at_name.update();
+
+    const operating_system = addText("Operating system: " + await eel.operating_system()());
+    operating_system.classes = "content";
+    operating_system.update();
+
+    const processor = addText("Processor: " + await eel.processor()());
+    processor.classes = "content";
+    processor.update();
+
+    const memory = addText("Memory: " + round(await eel.ram_total()()) + " GiB of RAM");
+    memory.classes = "content";
+    memory.update();
 }
 
 show_stats();

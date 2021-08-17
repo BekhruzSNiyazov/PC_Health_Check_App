@@ -1,6 +1,9 @@
 import eel
 import psutil
 import shutil
+import platform
+import os
+import cpuinfo
 
 bytes_to_gb = lambda bytes: bytes / 1000000000
 
@@ -24,6 +27,7 @@ def ram_total():
 def ram_gb_used():
 	return ram_total() - bytes_to_gb(psutil.virtual_memory().available)
 
+
 @eel.expose
 def disk_usage():
 	total, used, free = shutil.disk_usage("/")
@@ -31,6 +35,26 @@ def disk_usage():
 	used = used // (2 ** 30)
 	free = free // (2 ** 30)
 	return [total, used, free]
+
+
+@eel.expose
+def pc_name():
+	return platform.node()
+
+
+@eel.expose
+def username():
+	return os.getlogin()
+
+
+@eel.expose
+def operating_system():
+	return platform.system() + " " + platform.release()
+
+
+@eel.expose
+def processor():
+	return cpuinfo.get_cpu_info()["brand_raw"]
 
 
 eel.init("front-end")
