@@ -11,7 +11,8 @@ const show_stats = async () => {
     separate();
 
     // RAM usage
-    ram_usage = generate("RAM Usage", await eel.ram_usage()());
+    const stats = await ram_stats()
+    ram_usage = generate("RAM Usage", stats[0], stats[1]);
 
     separate();
 
@@ -21,7 +22,9 @@ const update_stats = async () => {
     while (true) {
         await new Promise(r => setTimeout(r, 1000));
         update(cpu_usage, await eel.cpu_usage()());
-        update(ram_usage, await eel.ram_usage()());
+
+        const stats = await ram_stats();
+        update(ram_usage, stats[0], stats[1]);
     }
 }
 

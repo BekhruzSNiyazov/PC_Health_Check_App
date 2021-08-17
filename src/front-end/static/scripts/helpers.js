@@ -1,7 +1,7 @@
 const round = (number) => Math.round(number * 10) / 10;
 
-const generate = (text, percent) => {
-    const heading = addHeading(text + " (" + percent + "%)", 3)
+const generate = (text, percent, gb) => {
+    const heading = gb ? addHeading(`${text} (${percent}% or ${gb[0]}Gb out of ${gb[1]}Gb used)`, 3) : addHeading(text + " (" + percent + "%)", 3)
     heading.classes = "content";
     heading.update();
 
@@ -27,10 +27,12 @@ const generate = (text, percent) => {
     return [heading, used, free, outerDiv];
 }
 
+const ram_stats = async () => [await eel.ram_usage()(), [round(await eel.ram_gb_used()()), round(await eel.ram_total()())]];
+
 const separate = () => addHTML("<br style='clear: both;'>");
 
-const update = async (elements, percent) => {
-    elements[0].element.innerText = elements[0].element.innerText.split("(")[0] + "(" + percent + "%)";
+const update = async (elements, percent, gb) => {
+    elements[0].element.innerText = elements[0].element.innerText.split("(")[0] + "(" + percent + (gb ? `% or ${gb[0]}Gb out of ${gb[1]}Gb used)` : "%)");
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = percent > 75 ? "#eb4646" : percent > 50 ? "#ebeb26" : "#15e626";
     elements[2].style.width = 100 - percent + "%";
