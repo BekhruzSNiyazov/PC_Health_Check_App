@@ -1,16 +1,39 @@
-const stats_heading = addHeading("Stats", 5);
-stats_heading.classes = "heading";
-stats_heading.update();
+const chart_view = () => {
+    remove_about();
 
-let cpu_usage, ram_usage, disk_usage;
+    view_button.text = "<i class=\"fas fa-grip-lines\"></i>";
+    view_button.onclick = bar_view;
+    view_button.update();
 
-const get_disk_usage_percent = async () => {
-    const [total, used] = await eel.disk_usage()();
+    cpu_usage[0].remove();
+    document.body.removeChild(cpu_usage[1].parentElement);
 
-    return round(100 - total / 100 * used);
+    ram_usage[0].remove();
+    document.body.removeChild(ram_usage[1].parentElement);
+
+    disk_usage[0].remove();
+    document.body.removeChild(disk_usage[1].parentElement);
+
+    document.getElementsByTagName("br").forEach((element) => {
+        element.parentElement.removeChild(element);
+    });
+
+    document.getElementsByTagName("br").forEach((element) => {
+        element.parentElement.removeChild(element);
+    });
+
+    _update = false;
+
+    about();
 }
 
-const show_stats = async () => {
+const bar_view = async () => {
+    if (!_update) remove_about();
+
+    view_button.text = "<i class=\"fas fa-chart-pie\"></i>";
+    view_button.onclick = chart_view;
+    view_button.update();
+
     // CPU usage
     cpu_usage = generate("CPU Usage", await eel.cpu_usage()());
 
@@ -30,8 +53,32 @@ const show_stats = async () => {
 
 }
 
+const view_button = addButton("<i class=\"fas fa-chart-pie\"></i>", getCookie("app-theme"), "right");
+view_button.onclick = chart_view;
+view_button.id = "view-button";
+view_button.update();
+view_button.setStyle("margin-right: 5vw; margin-top: 4vh; position: fixed;");
+
+const stats_heading = addHeading("Stats", 5);
+stats_heading.classes = "heading";
+stats_heading.update();
+
+let cpu_usage, ram_usage, disk_usage, _update = true;
+
+const get_disk_usage_percent = async () => {
+    const [total, used] = await eel.disk_usage()();
+
+    return round(100 - total / 100 * used);
+}
+
+const show_stats = async () => {
+
+    bar_view();
+
+}
+
 const update_stats = async () => {
-    while (true) {
+    while (_update) {
         await new Promise(r => setTimeout(r, 1000));
         update(cpu_usage, await eel.cpu_usage()());
 
@@ -43,26 +90,48 @@ const update_stats = async () => {
     }
 }
 
+let about_heading, username_at_name, operating_system, processor, memory;
+
+let first_time = true;
+
+let username_at_name_text, operating_system_text, processor_text, memory_text;
+
 const about = async () => {
-    const about_heading = addHeading("About your PC", 5);
+
+    if (first_time) {
+        username_at_name_text = await eel.username()() + "@" + await eel.pc_name()();
+        operating_system_text ="Operating system: " + await eel.operating_system()();
+        processor_text = "Processor: " + await eel.processor()();
+        memory_text = "Memory: " + round(await eel.ram_total()()) + " GiB of RAM";
+        first_time = false;
+    }
+    about_heading = addHeading("About your PC", 5);
     about_heading.classes = "heading";
     about_heading.update();
 
-    const username_at_name = addHeading(await eel.username()() + "@" + await eel.pc_name()(), 3);
+    username_at_name = addHeading(username_at_name_text, 3);
     username_at_name.classes = "content";
     username_at_name.update();
 
-    const operating_system = addText("Operating system: " + await eel.operating_system()());
+    operating_system = addText(operating_system_text);
     operating_system.classes = "content";
     operating_system.update();
 
-    const processor = addText("Processor: " + await eel.processor()());
+    processor = addText(processor_text);
     processor.classes = "content";
     processor.update();
 
-    const memory = addText("Memory: " + round(await eel.ram_total()()) + " GiB of RAM");
+    memory = addText(memory_text);
     memory.classes = "content";
     memory.update();
+}
+
+const remove_about = () => {
+    about_heading.remove();
+    username_at_name.remove();
+    operating_system.remove();
+    processor.remove();
+    memory.remove();
 }
 
 show_stats();

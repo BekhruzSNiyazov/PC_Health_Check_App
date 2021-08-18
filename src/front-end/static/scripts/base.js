@@ -3,7 +3,7 @@ const navbar = createNavBar();
 
 navbar.setTitle("PC Health Check App");
 navbar.addItem("logo", "../static/images/icon.png");
-navbar.addItem("button", ["primary", "<i class=\"fas fa-adjust\"></i>", "toggle();"], "right");
+navbar.addItem("button", [getCookie("app-theme") === "dark" ? "dark" : "light", "<i class=\"fas fa-adjust\"></i>", "toggle();"], "right");
 navbar.addItem("link", ["Home", "index.html"]);
 navbar.addItem("link", ["Settings", "settings.html"]);
 
@@ -20,6 +20,8 @@ let toggle = () => {
     } else {
         setCookie("app-theme", "light");
     }
+    document.getElementById("nav").getElementsByTagName("button")[1].className = "btn btn-" + getCookie("app-theme") + " ripple-surface"
+    document.getElementById("view-button").className = "btn btn-" + getCookie("app-theme") + " ripple-surface";
 }
 
 fixIconSize();
