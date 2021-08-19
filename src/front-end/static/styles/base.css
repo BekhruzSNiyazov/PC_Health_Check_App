@@ -20,4 +20,5 @@ body *:not(#nav *:not(button), .heading) {
 circle {
     transform: rotate(-90deg);
     transform-origin: 50% 50%;
+    transition: 1s;
 }

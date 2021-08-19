@@ -1,19 +1,27 @@
 const progress_ring_code = `
 <svg
     class="progress-ring"
-    width="120"
-    height="120">
+    width="240"
+    height="240">
+    <circle
+        stroke="${getCookie('app-theme') === 'light' ? 'lightgray' : 'gray'}"
+        stroke-width="20"
+        fill="transparent"
+        r="100"
+        cx="120"
+        cy="120"
+    />
     <circle
         class="progress-ring__circle"
-        stroke="white"
-        stroke-width="4"
+        stroke="green"
+        stroke-width="20"
         fill="transparent"
-        r="52"
-        cx="60"
-        cy="60"
+        r="100"
+        cx="120"
+        cy="120"
     />
 </svg>
-`
+`;
 
 const set_progress = (circle, percent) => {
     const radius = circle.r.baseVal.value;
@@ -21,11 +29,12 @@ const set_progress = (circle, percent) => {
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = `${circumference}`;
     circle.style.strokeDashoffset = circumference - percent / 100 * circumference;
+    circle.setAttribute("stroke", generate_background_color(percent));
 }
 
 let cpu_usage_svg;
 
-const chart_view = () => {
+const chart_view = async () => {
     remove_about();
 
     view_button.text = "<i class=\"fas fa-grip-lines\"></i>";
@@ -53,11 +62,14 @@ const chart_view = () => {
 
     // CPU Usage
     cpu_usage_svg = addHTML(progress_ring_code);
-    cpu_usage_circle = document.getElementsByTagName("circle")[0];
+    cpu_usage_circle = document.getElementsByTagName("circle")[1];
 
-    set_progress(cpu_usage_circle, 40);
+    set_progress(cpu_usage_circle, await eel.cpu_usage()());
 
     about();
+
+    _update_charts = true;
+    update_charts();
 }
 
 const bar_view = async () => {
@@ -65,6 +77,8 @@ const bar_view = async () => {
         cpu_usage_svg.remove();
         remove_about();
     }
+
+    _update_charts = false;
 
     view_button.text = "<i class=\"fas fa-chart-pie\"></i>";
     view_button.onclick = chart_view;
@@ -127,6 +141,19 @@ const update_stats = async () => {
 
         const [total, used, free] = await eel.disk_usage()();
         update_disk_usage(disk_usage, total, used, free, await get_disk_usage_percent());
+    }
+}
+
+let _update_charts = false;
+
+const update_charts = async () => {
+    while (_update_charts) {
+        await new Promise(r => setTimeout(r, 1000));
+
+        const cpu_percent = await eel.cpu_usage()();
+        const cpu_usage_chart = document.getElementsByTagName("circle")[1];
+        set_progress(cpu_usage_chart, cpu_percent);
+        cpu_usage_chart.setAttribute("stroke", generate_background_color(cpu_percent));
     }
 }
 
