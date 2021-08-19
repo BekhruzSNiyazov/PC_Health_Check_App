@@ -1,3 +1,30 @@
+const progress_ring_code = `
+<svg
+    class="progress-ring"
+    width="120"
+    height="120">
+    <circle
+        class="progress-ring__circle"
+        stroke="white"
+        stroke-width="4"
+        fill="transparent"
+        r="52"
+        cx="60"
+        cy="60"
+    />
+</svg>
+`
+
+const set_progress = (circle, percent) => {
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+    circle.style.strokeDashoffset = circumference - percent / 100 * circumference;
+}
+
+let cpu_usage_svg;
+
 const chart_view = () => {
     remove_about();
 
@@ -24,11 +51,20 @@ const chart_view = () => {
 
     _update = false;
 
+    // CPU Usage
+    cpu_usage_svg = addHTML(progress_ring_code);
+    cpu_usage_circle = document.getElementsByTagName("circle")[0];
+
+    set_progress(cpu_usage_circle, 40);
+
     about();
 }
 
 const bar_view = async () => {
-    if (!_update) remove_about();
+    if (!_update) {
+        cpu_usage_svg.remove();
+        remove_about();
+    }
 
     view_button.text = "<i class=\"fas fa-chart-pie\"></i>";
     view_button.onclick = chart_view;
@@ -50,6 +86,9 @@ const bar_view = async () => {
     disk_usage = generate_disk_usage(total, used, free, await get_disk_usage_percent());
 
     about();
+
+    _update = true;
+    update_stats();
 
 }
 
@@ -100,7 +139,7 @@ const about = async () => {
 
     if (first_time) {
         username_at_name_text = await eel.username()() + "@" + await eel.pc_name()();
-        operating_system_text ="Operating system: " + await eel.operating_system()();
+        operating_system_text = "Operating system: " + await eel.operating_system()();
         processor_text = "Processor: " + await eel.processor()();
         memory_text = "Memory: " + round(await eel.ram_total()()) + " GiB of RAM";
         first_time = false;
@@ -135,4 +174,3 @@ const remove_about = () => {
 }
 
 show_stats();
-update_stats();
