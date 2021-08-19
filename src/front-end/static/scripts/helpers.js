@@ -20,6 +20,15 @@ const generate_disk_usage = (total, used_gb, free_gb, percent) => {
     return [heading, used, free, outerDiv];
 }
 
+const generate_cpu_info = (cpu_usage, cpu_speed) => {
+    const heading = addHeading("CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)", 3);
+    heading.classes = "content";
+    heading.update();
+
+    const [used, free, outerDiv] = generate_bar(cpu_usage);
+    return [heading, used, free, outerDiv];
+}
+
 const generate_bar = (percent) => {
     const outerDiv = document.createElement("div");
     outerDiv.className = "content stats";
@@ -59,5 +68,13 @@ const update_disk_usage = (elements, total, used, free, percent) => {
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = generate_background_color(percent);
     elements[2].style.width = 100 - percent + "%";
+    elements[3].style.backgroundColor = getCookie("app-theme") === "dark" ? "gray" : "lightgray";
+}
+
+const update_cpu_info = (elements, cpu_usage, cpu_speed) => {
+    elements[0].element.innerText = "CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)";
+    elements[1].style.width = cpu_usage + "%";
+    elements[1].style.backgroundColor = generate_background_color(cpu_usage);
+    elements[2].style.width = 100 - cpu_usage + "%";
     elements[3].style.backgroundColor = getCookie("app-theme") === "dark" ? "gray" : "lightgray";
 }

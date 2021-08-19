@@ -57,6 +57,11 @@ def processor():
 	return cpuinfo.get_cpu_info()["brand_raw"]
 
 
+@eel.expose
+def cpu_speed():
+	return psutil.cpu_freq().current
+
+
 eel.init("front-end")
 
 if __name__ == '__main__':

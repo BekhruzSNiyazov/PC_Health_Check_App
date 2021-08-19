@@ -32,8 +32,8 @@ const chart_view = () => {
     view_button.onclick = bar_view;
     view_button.update();
 
-    cpu_usage[0].remove();
-    document.body.removeChild(cpu_usage[1].parentElement);
+    cpu_info[0].remove();
+    document.body.removeChild(cpu_info[1].parentElement);
 
     ram_usage[0].remove();
     document.body.removeChild(ram_usage[1].parentElement);
@@ -71,7 +71,7 @@ const bar_view = async () => {
     view_button.update();
 
     // CPU usage
-    cpu_usage = generate("CPU Usage", await eel.cpu_usage()());
+    cpu_info = generate_cpu_info(await eel.cpu_usage()(), round(await eel.cpu_speed()() / 1000));
 
     separate();
 
@@ -102,7 +102,7 @@ const stats_heading = addHeading("Stats", 5);
 stats_heading.classes = "heading";
 stats_heading.update();
 
-let cpu_usage, ram_usage, disk_usage, _update = true;
+let cpu_info, ram_usage, disk_usage, _update = true;
 
 const get_disk_usage_percent = async () => {
     const [total, used] = await eel.disk_usage()();
@@ -119,7 +119,8 @@ const show_stats = async () => {
 const update_stats = async () => {
     while (_update) {
         await new Promise(r => setTimeout(r, 1000));
-        update(cpu_usage, await eel.cpu_usage()());
+
+        update_cpu_info(cpu_info, await eel.cpu_usage()(), round(await eel.cpu_speed()() / 1000));
 
         const stats = await ram_stats();
         update(ram_usage, stats[0], stats[1]);
