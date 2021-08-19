@@ -1,18 +1,8 @@
 const round = (number) => Math.round(number * 10) / 10;
 const generate_background_color = (percent) => percent > 75 ? "#eb4646" : percent > 50 ? "#ebeb26" : "#15e626";
 
-const generate = (text, percent, gb) => {
-    const heading = gb ? addHeading(`${text} (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3)
-        : addHeading(text + " (" + percent + "%)", 3);
-    heading.classes = "content";
-    heading.update();
-
-    const [used, free, outerDiv] = generate_bar(percent);
-    return [heading, used, free, outerDiv];
-}
-
 const generate_disk_usage = (total, used_gb, free_gb, percent) => {
-    const heading = addHeading(`Disk Usage (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3);
+    const heading = addHeading(`Disk (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3);
     heading.classes = "content";
     heading.update();
 
@@ -26,6 +16,15 @@ const generate_cpu_info = (cpu_usage, cpu_speed) => {
     heading.update();
 
     const [used, free, outerDiv] = generate_bar(cpu_usage);
+    return [heading, used, free, outerDiv];
+}
+
+const generate_ram_usage = (percent, gb) => {
+    const heading = addHeading(`RAM (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3);
+    heading.classes = "content";
+    heading.update();
+
+    const [used, free, outerDiv] = generate_bar(percent);
     return [heading, used, free, outerDiv];
 }
 
@@ -55,8 +54,8 @@ const ram_stats = async () => [await eel.ram_usage()(), [round(await eel.ram_gb_
 
 const separate = () => addHTML("<br style='clear: both;'>");
 
-const update = (elements, percent, gb) => {
-    elements[0].element.innerText = elements[0].element.innerText.split("(")[0] + "(" + percent + (gb ? `%, ${gb[0]}GiB/${gb[1]}GiB)` : "%)");
+const update_ram_usage = (elements, percent, gb) => {
+    elements[0].element.innerText = elements[0].element.innerText.split("(")[0] + "(" + percent + `%, ${gb[0]}GiB/${gb[1]}GiB)`;
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = generate_background_color(percent);
     elements[2].style.width = 100 - percent + "%";
@@ -64,7 +63,7 @@ const update = (elements, percent, gb) => {
 }
 
 const update_disk_usage = (elements, total, used, free, percent) => {
-    elements[0].element.innerText = `Disk Usage (${used}GiB/${total}GiB, ${free}GiB free)`;
+    elements[0].element.innerText = `Disk (${used}GiB/${total}GiB, ${free}GiB free)`;
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = generate_background_color(percent);
     elements[2].style.width = 100 - percent + "%";

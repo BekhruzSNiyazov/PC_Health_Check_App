@@ -77,7 +77,7 @@ const bar_view = async () => {
 
     // RAM usage
     const stats = await ram_stats()
-    ram_usage = generate("RAM Usage", stats[0], stats[1]);
+    ram_usage = generate_ram_usage(stats[0], stats[1]);
 
     separate();
 
@@ -123,7 +123,7 @@ const update_stats = async () => {
         update_cpu_info(cpu_info, await eel.cpu_usage()(), round(await eel.cpu_speed()() / 1000));
 
         const stats = await ram_stats();
-        update(ram_usage, stats[0], stats[1]);
+        update_ram_usage(ram_usage, stats[0], stats[1]);
 
         const [total, used, free] = await eel.disk_usage()();
         update_disk_usage(disk_usage, total, used, free, await get_disk_usage_percent());
