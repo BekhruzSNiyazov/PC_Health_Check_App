@@ -61,6 +61,7 @@ const chart_view = async () => {
     _update = false;
 
     // CPU Usage
+    generate_cpu_heading(await eel.cpu_usage()(), await eel.cpu_speed()());
     cpu_usage_svg = addHTML(progress_ring_code);
     cpu_usage_circle = document.getElementsByTagName("circle")[1];
 
@@ -85,7 +86,7 @@ const bar_view = async () => {
     view_button.update();
 
     // CPU usage
-    cpu_info = generate_cpu_info(await eel.cpu_usage()(), round(await eel.cpu_speed()() / 1000));
+    cpu_info = generate_cpu_info(await eel.cpu_usage()(), await eel.cpu_speed()());
 
     separate();
 
@@ -124,17 +125,11 @@ const get_disk_usage_percent = async () => {
     return round(100 - total / 100 * used);
 }
 
-const show_stats = async () => {
-
-    bar_view();
-
-}
-
 const update_stats = async () => {
     while (_update) {
         await new Promise(r => setTimeout(r, 1000));
 
-        update_cpu_info(cpu_info, await eel.cpu_usage()(), round(await eel.cpu_speed()() / 1000));
+        update_cpu_info(cpu_info, await eel.cpu_usage()(), await eel.cpu_speed()());
 
         const stats = await ram_stats();
         update_ram_usage(ram_usage, stats[0], stats[1]);
@@ -201,4 +196,4 @@ const remove_about = () => {
     memory.remove();
 }
 
-show_stats();
+bar_view();

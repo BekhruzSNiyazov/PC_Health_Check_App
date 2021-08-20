@@ -10,11 +10,15 @@ const generate_disk_usage = (total, used_gb, free_gb, percent) => {
     return [heading, used, free, outerDiv];
 }
 
-const generate_cpu_info = (cpu_usage, cpu_speed) => {
+const generate_cpu_heading = (cpu_usage, cpu_speed) => {
     const heading = addHeading("CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)", 3);
     heading.classes = "content";
     heading.update();
+    return heading;
+}
 
+const generate_cpu_info = (cpu_usage, cpu_speed) => {
+    const heading = generate_cpu_heading(cpu_usage, cpu_speed);
     const [used, free, outerDiv] = generate_bar(cpu_usage);
     return [heading, used, free, outerDiv];
 }

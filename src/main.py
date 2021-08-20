@@ -59,7 +59,7 @@ def processor():
 
 @eel.expose
 def cpu_speed():
-	return psutil.cpu_freq().current
+	return psutil.cpu_freq().current // 100 / 10
 
 
 eel.init("front-end")
