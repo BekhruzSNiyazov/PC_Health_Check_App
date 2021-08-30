@@ -17,6 +17,14 @@ const generate_cpu_heading = (cpu_usage, cpu_speed) => {
     return heading;
 }
 
+const generate_ram_heading = (percent, gb) => {
+    const heading = addHeading(`RAM (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3);
+    heading.classes = "content";
+    heading.update();;
+    return heading;
+}
+
+
 const generate_cpu_info = (cpu_usage, cpu_speed) => {
     const heading = generate_cpu_heading(cpu_usage, cpu_speed);
     const [used, free, outerDiv] = generate_bar(cpu_usage);
@@ -24,10 +32,7 @@ const generate_cpu_info = (cpu_usage, cpu_speed) => {
 }
 
 const generate_ram_usage = (percent, gb) => {
-    const heading = addHeading(`RAM (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3);
-    heading.classes = "content";
-    heading.update();
-
+    const heading = generate_ram_heading(percent, gb);
     const [used, free, outerDiv] = generate_bar(percent);
     return [heading, used, free, outerDiv];
 }
@@ -58,8 +63,20 @@ const ram_stats = async () => [await eel.ram_usage()(), [round(await eel.ram_gb_
 
 const separate = () => addHTML("<br style='clear: both;'>");
 
+const update_ram_heading = (heading, percent, gb) => {
+    heading.element.innerText = heading.element.innerText.split("(")[0] + "(" + percent + `%, ${gb[0]}GiB/${gb[1]}GiB)`;
+}
+
+const update_disk_heading = (heading, total, used, free, percent) => {
+    heading.element.innerText = `Disk (${used}GiB/${total}GiB, ${free}GiB free)`;
+}
+
+const update_cpu_heading = (heading, cpu_usage, cpu_speed) => {
+    heading.element.innerText = "CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)";
+}
+
 const update_ram_usage = (elements, percent, gb) => {
-    elements[0].element.innerText = elements[0].element.innerText.split("(")[0] + "(" + percent + `%, ${gb[0]}GiB/${gb[1]}GiB)`;
+    update_ram_heading(elements[0], percent, gb);
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = generate_background_color(percent);
     elements[2].style.width = 100 - percent + "%";
@@ -67,7 +84,7 @@ const update_ram_usage = (elements, percent, gb) => {
 }
 
 const update_disk_usage = (elements, total, used, free, percent) => {
-    elements[0].element.innerText = `Disk (${used}GiB/${total}GiB, ${free}GiB free)`;
+    update_disk_heading(elements[0], total, used, free, percent);
     elements[1].style.width = percent + "%";
     elements[1].style.backgroundColor = generate_background_color(percent);
     elements[2].style.width = 100 - percent + "%";
@@ -75,7 +92,7 @@ const update_disk_usage = (elements, total, used, free, percent) => {
 }
 
 const update_cpu_info = (elements, cpu_usage, cpu_speed) => {
-    elements[0].element.innerText = "CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)";
+    update_cpu_heading(elements[0], cpu_usage, cpu_speed);
     elements[1].style.width = cpu_usage + "%";
     elements[1].style.backgroundColor = generate_background_color(cpu_usage);
     elements[2].style.width = 100 - cpu_usage + "%";

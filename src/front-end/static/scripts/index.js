@@ -32,7 +32,9 @@ const set_progress = (circle, percent) => {
     circle.setAttribute("stroke", generate_background_color(percent));
 }
 
-let cpu_usage_svg;
+let cpu_usage_svg, ram_usage_svg;
+let cpu_usage_text, ram_usage_text;
+let cpu_usage_circle, ram_usage_circle;
 
 const chart_view = async () => {
     remove_about();
@@ -61,11 +63,17 @@ const chart_view = async () => {
     _update = false;
 
     // CPU Usage
-    generate_cpu_heading(await eel.cpu_usage()(), await eel.cpu_speed()());
+    cpu_usage_text = generate_cpu_heading(await eel.cpu_usage()(), await eel.cpu_speed()());
     cpu_usage_svg = addHTML(progress_ring_code);
     cpu_usage_circle = document.getElementsByTagName("circle")[1];
-
     set_progress(cpu_usage_circle, await eel.cpu_usage()());
+
+    // RAM Usage
+    const stats = await ram_stats();
+    ram_usage_text = generate_ram_heading(stats[0], stats[1]);
+    ram_usage_svg = addHTML(progress_ring_code);
+    ram_usage_circle = document.getElementsByTagName("circle")[3];
+    set_progress(ram_usage_circle, stats[0]);
 
     about();
 
@@ -76,6 +84,11 @@ const chart_view = async () => {
 const bar_view = async () => {
     if (!_update) {
         cpu_usage_svg.remove();
+        cpu_usage_text.remove();
+
+        ram_usage_svg.remove();
+        ram_usage_text.remove();
+
         remove_about();
     }
 
@@ -146,9 +159,15 @@ const update_charts = async () => {
         await new Promise(r => setTimeout(r, 1000));
 
         const cpu_percent = await eel.cpu_usage()();
-        const cpu_usage_chart = document.getElementsByTagName("circle")[1];
-        set_progress(cpu_usage_chart, cpu_percent);
-        cpu_usage_chart.setAttribute("stroke", generate_background_color(cpu_percent));
+        const cpu_speed = await eel.cpu_speed()();
+        set_progress(cpu_usage_circle, cpu_percent);
+        cpu_usage_circle.setAttribute("stroke", generate_background_color(cpu_percent));
+        update_cpu_heading(cpu_usage_text, cpu_percent, cpu_speed);
+
+        const stats = await ram_stats();
+        set_progress(ram_usage_circle, stats[0]);
+        ram_usage_circle.setAttribute("stroke", generate_background_color(stats[0]));
+        update_ram_heading(ram_usage_text, stats[0], stats[1], stats[2]);
     }
 }
 
@@ -159,7 +178,6 @@ let first_time = true;
 let username_at_name_text, operating_system_text, processor_text, memory_text;
 
 const about = async () => {
-
     if (first_time) {
         username_at_name_text = await eel.username()() + "@" + await eel.pc_name()();
         operating_system_text = "Operating system: " + await eel.operating_system()();
@@ -167,6 +185,7 @@ const about = async () => {
         memory_text = "Memory: " + round(await eel.ram_total()()) + " GiB of RAM";
         first_time = false;
     }
+
     about_heading = addHeading("About your PC", 5);
     about_heading.classes = "heading";
     about_heading.update();

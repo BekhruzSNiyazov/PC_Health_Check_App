@@ -22,3 +22,7 @@ circle {
     transform-origin: 50% 50%;
     transition: 1s;
 }
+
+button {
+    border-radius: 25px !important;
+}
