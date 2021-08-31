@@ -22,6 +22,9 @@ let toggle = () => {
     }
     document.getElementById("nav").getElementsByTagName("button")[1].className = "btn btn-" + getCookie("app-theme") + " ripple-surface"
     document.getElementById("view-button").className = "btn btn-" + getCookie("app-theme") + " ripple-surface";
+    document.getElementsByClassName("gray-circle").forEach((circle) => {
+        circle.setAttribute("stroke", getCookie("app-theme") === "light" ? "lightgray" : "gray");
+    })
 }
 
 fixIconSize();
@@ -32,4 +35,9 @@ if (!checkCookie("app-theme")) {
 } else if (getCookie("app-theme") === "dark") {
     toggleTheme();
     fixIconSize();
+}
+
+// if the app was opened for the first time set the default view to progress bar view
+if (!checkCookie("stats-view")) {
+    setCookie("stats-view", "bar");
 }

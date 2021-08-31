@@ -1,13 +1,20 @@
 const round = (number) => Math.round(number * 10) / 10;
 const generate_background_color = (percent) => percent > 75 ? "#eb4646" : percent > 50 ? "#ebeb26" : "#15e626";
+const fix_view_button = () => document.getElementById("view-button").className = "btn btn-" + getCookie("app-theme") + " ripple-surface";
 
-const generate_disk_usage = (total, used_gb, free_gb, percent) => {
-    const heading = addHeading(`Disk (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3);
-    heading.classes = "content";
-    heading.update();
+const set_progress = (circle, percent) => {
+    const radius = circle.r.baseVal.value;
+    const circumference = radius * 2 * Math.PI;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
+    circle.style.strokeDashoffset = circumference - percent / 100 * circumference;
+    circle.setAttribute("stroke", generate_background_color(percent));
+}
 
-    const [used, free, outerDiv] = generate_bar(percent);
-    return [heading, used, free, outerDiv];
+const get_disk_usage_percent = async () => {
+    const [total, used] = await eel.disk_usage()();
+
+    return round(100 - total / 100 * used);
 }
 
 const generate_cpu_heading = (cpu_usage, cpu_speed) => {
@@ -24,6 +31,13 @@ const generate_ram_heading = (percent, gb) => {
     return heading;
 }
 
+const generate_disk_heading = (total, used_gb, free_gb, percent) => {
+    const heading = addHeading(`Disk (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3);
+    heading.classes = "content";
+    heading.update();
+    return heading;
+}
+
 
 const generate_cpu_info = (cpu_usage, cpu_speed) => {
     const heading = generate_cpu_heading(cpu_usage, cpu_speed);
@@ -33,6 +47,12 @@ const generate_cpu_info = (cpu_usage, cpu_speed) => {
 
 const generate_ram_usage = (percent, gb) => {
     const heading = generate_ram_heading(percent, gb);
+    const [used, free, outerDiv] = generate_bar(percent);
+    return [heading, used, free, outerDiv];
+}
+
+const generate_disk_usage = (total, used_gb, free_gb, percent) => {
+    const heading = generate_disk_heading(total, used_gb, free_gb, percent);
     const [used, free, outerDiv] = generate_bar(percent);
     return [heading, used, free, outerDiv];
 }
@@ -60,14 +80,13 @@ const generate_bar = (percent) => {
 }
 
 const ram_stats = async () => [await eel.ram_usage()(), [round(await eel.ram_gb_used()()), round(await eel.ram_total()())]];
-
 const separate = () => addHTML("<br style='clear: both;'>");
 
 const update_ram_heading = (heading, percent, gb) => {
     heading.element.innerText = heading.element.innerText.split("(")[0] + "(" + percent + `%, ${gb[0]}GiB/${gb[1]}GiB)`;
 }
 
-const update_disk_heading = (heading, total, used, free, percent) => {
+const update_disk_heading = (heading, total, used, free) => {
     heading.element.innerText = `Disk (${used}GiB/${total}GiB, ${free}GiB free)`;
 }
 

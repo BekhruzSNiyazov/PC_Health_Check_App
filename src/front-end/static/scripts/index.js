@@ -4,6 +4,7 @@ const progress_ring_code = `
     width="240"
     height="240">
     <circle
+        class="gray-circle"
         stroke="${getCookie('app-theme') === 'light' ? 'lightgray' : 'gray'}"
         stroke-width="20"
         fill="transparent"
@@ -23,50 +24,45 @@ const progress_ring_code = `
 </svg>
 `;
 
-const set_progress = (circle, percent) => {
-    const radius = circle.r.baseVal.value;
-    const circumference = radius * 2 * Math.PI;
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
-    circle.style.strokeDashoffset = `${circumference}`;
-    circle.style.strokeDashoffset = circumference - percent / 100 * circumference;
-    circle.setAttribute("stroke", generate_background_color(percent));
-}
-
-let cpu_usage_svg, ram_usage_svg;
-let cpu_usage_text, ram_usage_text;
-let cpu_usage_circle, ram_usage_circle;
+let cpu_usage_svg, ram_usage_svg, disk_usage_svg;
+let cpu_usage_text, ram_usage_text, disk_usage_text;
+let cpu_usage_circle, ram_usage_circle, disk_usage_circle;
 
 const chart_view = async () => {
-    remove_about();
+    setCookie("stats-view", "chart");
 
-    view_button.text = "<i class=\"fas fa-grip-lines\"></i>";
-    view_button.onclick = bar_view;
-    view_button.update();
+    if (!_update_charts && !first_time) {
+        view_button.text = "<i class=\"fas fa-grip-lines\"></i>";
+        view_button.onclick = bar_view;
+        view_button.update();
 
-    cpu_info[0].remove();
-    document.body.removeChild(cpu_info[1].parentElement);
+        cpu_info[0].remove();
+        document.body.removeChild(cpu_info[1].parentElement);
 
-    ram_usage[0].remove();
-    document.body.removeChild(ram_usage[1].parentElement);
+        ram_usage[0].remove();
+        document.body.removeChild(ram_usage[1].parentElement);
 
-    disk_usage[0].remove();
-    document.body.removeChild(disk_usage[1].parentElement);
+        disk_usage[0].remove();
+        document.body.removeChild(disk_usage[1].parentElement);
 
-    document.getElementsByTagName("br").forEach((element) => {
-        element.parentElement.removeChild(element);
-    });
+        document.getElementsByTagName("br").forEach((element) => {
+            element.parentElement.removeChild(element);
+        });
 
-    document.getElementsByTagName("br").forEach((element) => {
-        element.parentElement.removeChild(element);
-    });
+        document.getElementsByTagName("br").forEach((element) => {
+            element.parentElement.removeChild(element);
+        });
 
+        remove_about();
+    }
     _update = false;
 
     // CPU Usage
-    cpu_usage_text = generate_cpu_heading(await eel.cpu_usage()(), await eel.cpu_speed()());
+    const cpu_usage_percent = await eel.cpu_usage()();
+    cpu_usage_text = generate_cpu_heading(cpu_usage_percent, await eel.cpu_speed()());
     cpu_usage_svg = addHTML(progress_ring_code);
     cpu_usage_circle = document.getElementsByTagName("circle")[1];
-    set_progress(cpu_usage_circle, await eel.cpu_usage()());
+    set_progress(cpu_usage_circle, cpu_usage_percent);
 
     // RAM Usage
     const stats = await ram_stats();
@@ -75,19 +71,34 @@ const chart_view = async () => {
     ram_usage_circle = document.getElementsByTagName("circle")[3];
     set_progress(ram_usage_circle, stats[0]);
 
+
+    // Disk Usage
+    const [total, used, free] = await eel.disk_usage()();
+    const disk_usage_percent = await get_disk_usage_percent();
+    disk_usage_text  = generate_disk_heading(total, used, free, disk_usage_percent);
+    disk_usage_svg = addHTML(progress_ring_code);
+    disk_usage_cirlce = document.getElementsByTagName("circle")[5];
+    set_progress(disk_usage_cirlce, disk_usage_percent);
+
     about();
+    fix_view_button();
 
     _update_charts = true;
     update_charts();
 }
 
 const bar_view = async () => {
-    if (!_update) {
+    setCookie("stats-view", "bar");
+
+    if (!_update && !first_time) {
         cpu_usage_svg.remove();
         cpu_usage_text.remove();
 
         ram_usage_svg.remove();
         ram_usage_text.remove();
+
+        disk_usage_svg.remove();
+        disk_usage_text.remove();
 
         remove_about();
     }
@@ -109,11 +120,13 @@ const bar_view = async () => {
 
     separate();
 
-    // disk usage
+    // Disk Usage
     const [total, used, free] = await eel.disk_usage()();
-    disk_usage = generate_disk_usage(total, used, free, await get_disk_usage_percent());
+    const disk_usage_percent = await get_disk_usage_percent();
+    disk_usage = generate_disk_usage(total, used, free, disk_usage_percent);
 
     about();
+    fix_view_button();
 
     _update = true;
     update_stats();
@@ -121,22 +134,22 @@ const bar_view = async () => {
 }
 
 const view_button = addButton("<i class=\"fas fa-chart-pie\"></i>", getCookie("app-theme"), "right");
-view_button.onclick = chart_view;
 view_button.id = "view-button";
-view_button.update();
+if (getCookie("stats-view") === "bar") {
+    view_button.onclick = chart_view;
+    view_button.update();
+} else {
+    view_button.text = "<i class=\"fas fa-grip-lines\"></i>";
+    view_button.onclick = bar_view;
+    view_button.update();
+}
 view_button.setStyle("margin-right: 5vw; margin-top: 4vh; position: fixed;");
 
 const stats_heading = addHeading("Stats", 5);
 stats_heading.classes = "heading";
 stats_heading.update();
 
-let cpu_info, ram_usage, disk_usage, _update = true;
-
-const get_disk_usage_percent = async () => {
-    const [total, used] = await eel.disk_usage()();
-
-    return round(100 - total / 100 * used);
-}
+let cpu_info, ram_usage, disk_usage;
 
 const update_stats = async () => {
     while (_update) {
@@ -152,7 +165,7 @@ const update_stats = async () => {
     }
 }
 
-let _update_charts = false;
+let [_update_charts, _update] = [false, false];
 
 const update_charts = async () => {
     while (_update_charts) {
@@ -172,9 +185,7 @@ const update_charts = async () => {
 }
 
 let about_heading, username_at_name, operating_system, processor, memory;
-
 let first_time = true;
-
 let username_at_name_text, operating_system_text, processor_text, memory_text;
 
 const about = async () => {
@@ -215,4 +226,11 @@ const remove_about = () => {
     memory.remove();
 }
 
-bar_view();
+// using the last view the user chose on start up
+if (getCookie("stats-view") === "bar") {
+    bar_view();
+    _update = true;
+} else {
+    chart_view();
+    _update_charts = true;
+}
