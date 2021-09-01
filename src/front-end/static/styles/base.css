@@ -26,3 +26,7 @@ circle {
 button {
     border-radius: 25px !important;
 }
+
+.col {
+    margin-top: 0 !important;
+}

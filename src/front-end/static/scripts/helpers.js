@@ -18,41 +18,40 @@ const get_disk_usage_percent = async () => {
 }
 
 const generate_cpu_heading = (cpu_usage, cpu_speed) => {
-    const heading = addHeading("CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)", 3);
-    heading.classes = "content";
-    heading.update();
+    const heading = new Heading("CPU (" + cpu_usage + "%, " + cpu_speed + "GHz)", 3, "left");
     return heading;
 }
 
 const generate_ram_heading = (percent, gb) => {
-    const heading = addHeading(`RAM (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3);
-    heading.classes = "content";
-    heading.update();;
+    const heading = new Heading(`RAM (${percent}%, ${gb[0]}GiB/${gb[1]}GiB)`, 3, "left");
     return heading;
 }
 
 const generate_disk_heading = (total, used_gb, free_gb, percent) => {
-    const heading = addHeading(`Disk (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3);
-    heading.classes = "content";
-    heading.update();
+    const heading = new Heading(`Disk (${used_gb}GiB/${total}GiB, ${free_gb}GiB free)`, 3, "left");
     return heading;
 }
 
-
 const generate_cpu_info = (cpu_usage, cpu_speed) => {
     const heading = generate_cpu_heading(cpu_usage, cpu_speed);
+    heading.classes = "content";
+    heading.add();
     const [used, free, outerDiv] = generate_bar(cpu_usage);
     return [heading, used, free, outerDiv];
 }
 
 const generate_ram_usage = (percent, gb) => {
     const heading = generate_ram_heading(percent, gb);
+    heading.classes = "content";
+    heading.add();
     const [used, free, outerDiv] = generate_bar(percent);
     return [heading, used, free, outerDiv];
 }
 
 const generate_disk_usage = (total, used_gb, free_gb, percent) => {
     const heading = generate_disk_heading(total, used_gb, free_gb, percent);
+    heading.classes = "content";
+    heading.add();
     const [used, free, outerDiv] = generate_bar(percent);
     return [heading, used, free, outerDiv];
 }

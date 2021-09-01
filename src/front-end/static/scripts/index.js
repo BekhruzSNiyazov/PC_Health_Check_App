@@ -1,32 +1,7 @@
-const progress_ring_code = `
-<svg
-    class="progress-ring"
-    width="240"
-    height="240">
-    <circle
-        class="gray-circle"
-        stroke="${getCookie('app-theme') === 'light' ? 'lightgray' : 'gray'}"
-        stroke-width="20"
-        fill="transparent"
-        r="100"
-        cx="120"
-        cy="120"
-    />
-    <circle
-        class="progress-ring__circle"
-        stroke="green"
-        stroke-width="20"
-        fill="transparent"
-        r="100"
-        cx="120"
-        cy="120"
-    />
-</svg>
-`;
-
 let cpu_usage_svg, ram_usage_svg, disk_usage_svg;
 let cpu_usage_text, ram_usage_text, disk_usage_text;
-let cpu_usage_circle, ram_usage_circle, disk_usage_circle;
+let cpu_cicle, ram_circle, disk_circle;
+let first_row, second_row;
 
 const chart_view = async () => {
     setCookie("stats-view", "chart");
@@ -59,46 +34,44 @@ const chart_view = async () => {
 
     // CPU Usage
     const cpu_usage_percent = await eel.cpu_usage()();
-    cpu_usage_text = generate_cpu_heading(cpu_usage_percent, await eel.cpu_speed()());
-    cpu_usage_svg = addHTML(progress_ring_code);
-    cpu_usage_circle = document.getElementsByTagName("circle")[1];
-    set_progress(cpu_usage_circle, cpu_usage_percent);
+    const speed = await eel.cpu_speed()();
+    cpu_usage_text = generate_cpu_heading(cpu_usage_percent, speed);
+    cpu_usage_text.position = "center";
+    cpu_usage_svg = new ProgressRing(cpu_usage_percent);
 
     // RAM Usage
     const stats = await ram_stats();
     ram_usage_text = generate_ram_heading(stats[0], stats[1]);
-    ram_usage_svg = addHTML(progress_ring_code);
-    ram_usage_circle = document.getElementsByTagName("circle")[3];
-    set_progress(ram_usage_circle, stats[0]);
+    ram_usage_text.position = "center";
+    ram_usage_svg = new ProgressRing(stats[0]);
 
 
     // Disk Usage
     const [total, used, free] = await eel.disk_usage()();
     const disk_usage_percent = await get_disk_usage_percent();
     disk_usage_text  = generate_disk_heading(total, used, free, disk_usage_percent);
-    disk_usage_svg = addHTML(progress_ring_code);
-    disk_usage_cirlce = document.getElementsByTagName("circle")[5];
-    set_progress(disk_usage_cirlce, disk_usage_percent);
-
-    about();
-    fix_view_button();
+    disk_usage_text.position = "center";
+    disk_usage_svg = new ProgressRing(disk_usage_percent);
 
     _update_charts = true;
     update_charts();
+    
+    first_row = createGrid([[cpu_usage_text, ram_usage_text, disk_usage_text]]);
+    second_row = createGrid([[cpu_usage_svg, ram_usage_svg, disk_usage_svg]]);
+    cpu_circle = cpu_usage_svg.color_ring;
+    ram_circle = ram_usage_svg.color_ring;
+    disk_circle = disk_usage_svg.color_ring;
+
+    about();
+    fix_view_button();
 }
 
 const bar_view = async () => {
     setCookie("stats-view", "bar");
 
     if (!_update && !first_time) {
-        cpu_usage_svg.remove();
-        cpu_usage_text.remove();
-
-        ram_usage_svg.remove();
-        ram_usage_text.remove();
-
-        disk_usage_svg.remove();
-        disk_usage_text.remove();
+        first_row.remove();
+        second_row.remove();
 
         remove_about();
     }
@@ -173,13 +146,13 @@ const update_charts = async () => {
 
         const cpu_percent = await eel.cpu_usage()();
         const cpu_speed = await eel.cpu_speed()();
-        set_progress(cpu_usage_circle, cpu_percent);
-        cpu_usage_circle.setAttribute("stroke", generate_background_color(cpu_percent));
+        set_progress(cpu_circle, cpu_percent);
+        cpu_circle.setAttribute("stroke", generate_background_color(cpu_percent));
         update_cpu_heading(cpu_usage_text, cpu_percent, cpu_speed);
 
         const stats = await ram_stats();
-        set_progress(ram_usage_circle, stats[0]);
-        ram_usage_circle.setAttribute("stroke", generate_background_color(stats[0]));
+        set_progress(ram_circle, stats[0]);
+        ram_circle.setAttribute("stroke", generate_background_color(stats[0]));
         update_ram_heading(ram_usage_text, stats[0], stats[1], stats[2]);
     }
 }

@@ -22,8 +22,8 @@ let toggle = () => {
     }
     document.getElementById("nav").getElementsByTagName("button")[1].className = "btn btn-" + getCookie("app-theme") + " ripple-surface"
     document.getElementById("view-button").className = "btn btn-" + getCookie("app-theme") + " ripple-surface";
-    document.getElementsByClassName("gray-circle").forEach((circle) => {
-        circle.setAttribute("stroke", getCookie("app-theme") === "light" ? "lightgray" : "gray");
+    document.getElementsByTagName("circle").forEach((circle, i) => {
+        if (i % 2 === 0) circle.setAttribute("stroke", getCookie("app-theme") === "light" ? "lightgray" : "gray");
     })
 }
 
